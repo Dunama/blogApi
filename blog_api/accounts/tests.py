@@ -8,9 +8,9 @@ class AuthTests(APITestCase):
 
 		# Critical: signup works and returns JWT tokens.
 		payload = {
-			'username': 'alice',
-			'email': 'alice@example.com',
-			'password': 'password123',
+			"username": "alice",
+			"email": "alice@example.com",
+			"password": "password123",
 		}
 		res = self.client.post('/api/auth/signup/', payload, format='json')
 		self.assertEqual(res.status_code, status.HTTP_201_CREATED)

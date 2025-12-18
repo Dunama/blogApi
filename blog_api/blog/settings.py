@@ -31,6 +31,12 @@ DEBUG = os.environ.get('DJANGO_DEBUG', '0').lower() in ('1', 'true', 'yes', 'on'
 _allowed_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').strip()
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',') if h.strip()]
 
+# Render provides the public hostname of your service in this env var.
+# Adding it here prevents Django DisallowedHost (400 Bad Request) on Render.
+render_external_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip()
+if render_external_hostname and render_external_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_external_hostname)
+
 
 # Application definition
 
@@ -164,6 +170,15 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 csrf_trusted = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').strip()
 if csrf_trusted:
     CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_trusted.split(',') if o.strip()]
+
+# If you use Django session-based forms (signin/signup) on Render, CSRF needs the
+# deployed origin to be trusted.
+if render_external_hostname:
+    render_origin = f"https://{render_external_hostname}"
+    if 'CSRF_TRUSTED_ORIGINS' not in globals():
+        CSRF_TRUSTED_ORIGINS = []
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
