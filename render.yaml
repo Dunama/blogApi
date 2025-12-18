@@ -3,8 +3,8 @@ services:
     name: blog-api
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python blog_api/manage.py collectstatic --noinput && python blog_api/manage.py migrate --noinput
-    startCommand: gunicorn blog.wsgi:application --chdir blog_api --bind 0.0.0.0:$PORT --log-file -
+    buildCommand: pip install -r requirements.txt && python blog_api/manage.py collectstatic --noinput
+    startCommand: sh -c "python blog_api/manage.py migrate --noinput && gunicorn blog.wsgi:application --chdir blog_api --bind 0.0.0.0:$PORT --log-file -"
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
