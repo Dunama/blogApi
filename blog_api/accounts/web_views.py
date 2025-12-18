@@ -167,8 +167,18 @@ def profile(request, username: str | None = None):
         return redirect('/')
 
     user_profile, _ = Profile.objects.get_or_create(user=user_object)
-    user_posts = Post.objects.filter(author=user_object).order_by('-created_at')
+    request_user_profile, _ = Profile.objects.get_or_create(user=request.user)
+    user_posts = (
+        Post.objects.filter(author=user_object)
+        .select_related('author')
+        .prefetch_related('likes', 'comments', 'comments__author')
+        .order_by('-created_at')
+    )
     user_post_length = user_posts.count()
+
+    liked_post_ids = set(
+        Post.objects.filter(likes=request.user).values_list('id', flat=True)
+    )
 
     user_followers = Follow.objects.filter(following=user_object).count()
     user_following = Follow.objects.filter(follower=user_object).count()
@@ -182,8 +192,10 @@ def profile(request, username: str | None = None):
         {
             'user_object': user_object,
             'user_profile': user_profile,
+            'request_user_profile': request_user_profile,
             'user_posts': user_posts,
             'user_post_length': user_post_length,
+            'liked_post_ids': liked_post_ids,
             'user_followers': user_followers,
             'user_following': user_following,
             'button_text': button_text,

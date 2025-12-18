@@ -49,18 +49,6 @@ Open:
 - Admin: `http://127.0.0.1:8000/admin/`
 - API base: `http://127.0.0.1:8000/api/`
 
-## Run Locally (Docker)
-
-Prerequisite: Docker Desktop running.
-
-From the repo root (where `docker-compose.yaml` lives):
-
-- `docker compose up --build`
-
-If you get a Windows bind-mount error for SQLite, create the file once:
-
-- `New-Item -ItemType File -Force "blog_api\db.sqlite3" | Out-Null`
-
 ## API (Postman Quick Test)
 
 Base URL (local): `http://127.0.0.1:8000`

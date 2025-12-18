@@ -55,11 +55,18 @@
                     </a>
                 </div> {% endcomment %}
 
-                <div>
-                    <a href="/profile/{{user.username}}/" class="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700" aria-label="My Profile">
-                        <i class="fa fa-user"></i>
-                    </a>
-                </div>
+                <a href="/profile/{{user.username}}/" class="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-50 overflow-hidden flex items-center justify-center" aria-label="My Profile">
+                    {% if user_profile and user_profile.profileimg %}
+                        <img src="{{ user_profile.profileimg.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <i class="fa fa-user text-gray-700"></i>
+                    {% endif %}
+                </a>
+
+                <a href="/logout/" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium" aria-label="Log out">
+                    <i class="fa fa-sign-out-alt"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </a>
             </div>
         </div>
     </header>
@@ -100,35 +107,41 @@
                         </div>
 
                         <div>
-                            <button type="button" class="text-gray-400 hover:text-gray-600" aria-label="Post menu">
-                                <i class="fa fa-ellipsis-h"></i>
-                            </button>
-                            <div uk-drop="mode: click; pos: bottom-right; offset: 8">
-                                <ul class="bg-white shadow-lg rounded-lg border border-gray-100 w-40 text-sm py-2">
-                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 text-gray-600">Share</a></li>
-                                    <li><a href="{{post.image.url}}" download class="block px-4 py-2 hover:bg-gray-100 text-gray-600">Download</a></li>
-                                    {% if post.user == request.user %}
-                                    <li class="border-t border-gray-100"></li>
-                                    <li>
-                                        <form action="/delete-post/" method="POST" class="block">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="post_id" value="{{post.id}}">
-                                            <button type="submit" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600">Delete</button>
-                                        </form>
-                                    </li>
-                                    {% endif %}
-                                    <li class="border-t border-gray-100"></li>
-                                    <li><a href="#" class="block px-4 py-2 hover:bg-red-50 text-red-500">Report</a></li>
-                                </ul>
+                            <div class="uk-inline">
+                                <button type="button" class="text-gray-400 hover:text-gray-600" aria-label="Post menu">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </button>
+                                <div uk-dropdown="mode: click; pos: bottom-right; offset: 8">
+                                    <ul class="bg-white shadow-lg rounded-lg border border-gray-100 w-40 text-sm py-2">
+                                        <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 text-gray-600">Share</a></li>
+                                        {% if post.image %}
+                                        <li><a href="{{post.image.url}}" download class="block px-4 py-2 hover:bg-gray-100 text-gray-600">Download</a></li>
+                                        {% endif %}
+                                        {% if post.user == request.user %}
+                                        <li class="border-t border-gray-100"></li>
+                                        <li>
+                                            <form action="/delete-post/" method="POST" class="block">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="post_id" value="{{post.id}}">
+                                                <button type="submit" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600">Delete</button>
+                                            </form>
+                                        </li>
+                                        {% endif %}
+                                        <li class="border-t border-gray-100"></li>
+                                        <li><a href="#" class="block px-4 py-2 hover:bg-red-50 text-red-500">Report</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    {% if post.image %}
                     <div class="w-full bg-gray-100">
                         <a href="{{post.image.url}}">
                             <img src="{{post.image.url}}" alt="Post by {{post.user}}" class="w-full h-auto object-cover max-h-[600px]">
                         </a>
                     </div>
+                    {% endif %}
 
                     <div class="px-5 py-3">
                         <div class="flex items-center justify-between mb-3">
@@ -147,9 +160,13 @@
                                 <a href="#comments-{{post.id}}" class="hover:text-blue-500 transition"><i class="far fa-comment"></i></a>
                                 <a href="#" class="hover:text-green-500 transition"><i class="far fa-paper-plane"></i></a>
                             </div>
-                            <a href="{{post.image.url}}" download class="text-gray-800 hover:text-gray-600 text-2xl">
-                                <i class="far fa-bookmark"></i>
-                            </a>
+                            {% if post.image %}
+                                <a href="{{post.image.url}}" download class="text-gray-800 hover:text-gray-600 text-2xl">
+                                    <i class="far fa-bookmark"></i>
+                                </a>
+                            {% else %}
+                                <span class="text-gray-300 text-2xl" aria-hidden="true"><i class="far fa-bookmark"></i></span>
+                            {% endif %}
                         </div>
 
                         <div class="font-bold text-sm text-gray-900 mb-2">

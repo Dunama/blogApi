@@ -29,27 +29,34 @@
             </a>
 
             <div>
-                <button type="button" class="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700" aria-label="Menu">
-                    <i class="fa fa-bars"></i>
-                </button>
-                <div uk-drop="mode: click; pos: bottom-right; offset: 8">
-                    <div class="bg-white rounded-lg shadow-xl border border-gray-100 w-48 py-2">
-                        <a href="/" class="block px-4 py-2 hover:bg-gray-100 text-gray-700">
-                            <i class="fa fa-home mr-2"></i> Home
-                        </a>
-                        <a href="/profile/{{user.username}}/" class="block px-4 py-2 hover:bg-gray-100 text-gray-700">
-                            <i class="fa fa-user mr-2"></i> My Profile
-                        </a>
-                        {% if user.username == user_object.username %}
-                        <a href="/settings/" class="block px-4 py-2 hover:bg-gray-100 text-gray-700">
-                            <i class="fa fa-cog mr-2"></i> Settings
-                        </a>
+                <div class="uk-inline">
+                    <button type="button" class="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-50 overflow-hidden flex items-center justify-center" aria-label="Account menu">
+                        {% if request_user_profile and request_user_profile.profileimg %}
+                            <img src="{{ request_user_profile.profileimg.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <i class="fa fa-user text-gray-700"></i>
                         {% endif %}
-                        <hr class="my-1 border-gray-100">
-                        <a href="/logout/" class="block px-4 py-2 hover:bg-red-50 text-red-600">
-                            <i class="fa fa-sign-out-alt mr-2"></i> Log Out
-                        </a>
-                    </div>
+                    </button>
+                    {% comment %} <div uk-dropdown="mode: click; pos: bottom-right; offset: 8">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li>
+                                <a href="/profile/{{user.username}}/">
+                                    <i class="fa fa-user uk-margin-small-right"></i> My Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/settings/">
+                                    <i class="fa fa-cog uk-margin-small-right"></i> Settings
+                                </a>
+                            </li>
+                            <li class="uk-nav-divider"></li>
+                            <li>
+                                <a href="/logout/" class="uk-text-danger">
+                                    <i class="fa fa-sign-out-alt uk-margin-small-right"></i> Log Out
+                                </a>
+                            </li>
+                        </ul>
+                    </div> {% endcomment %}
                 </div>
             </div>
         </div>
@@ -121,13 +128,15 @@
             {% if user_posts %}
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {% for post in user_posts %}
-                        <a href="{{ post.image.url }}" class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                            {% if post.image %}
+                        {% if post.image %}
+                            <a href="{{ post.image.url }}" class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                 <img src="{{ post.image.url }}" alt="Post" class="w-full h-40 object-cover">
-                            {% else %}
+                            </a>
+                        {% else %}
+                            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                 <div class="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400">No image</div>
-                            {% endif %}
-                        </a>
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
             {% else %}
