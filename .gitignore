@@ -1,0 +1,27 @@
+# Virtual env
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.*
+*.key
+*.pem
+
+# Django local DB / uploads
+blog_api/db.sqlite3
+db.sqlite3
+blog_api/media/
+media/
+
+# Django cache / logs
+__pycache__/
+*.pyc
+*.log
+
+# Static collected output (if you ever run collectstatic locally)
+staticfiles/
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,146 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'favicon.png' %}" rel="icon" type="image/png">
+    <title>Profile | {{ user_object.username }}</title>
+
+    <link rel="stylesheet" href="{% static 'assets/css/icons.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/uikit.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; }
+        .header-blur { backdrop-filter: blur(10px); background-color: rgba(255, 255, 255, 0.95); }
+    </style>
+</head>
+
+<body>
+    <header class="header-blur sticky top-0 z-50 border-b border-gray-200 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
+            <a href="/" class="text-2xl font-bold text-gray-800 tracking-tighter">
+                SOCIAL<span class="text-pink-600">BOOK</span>
+            </a>
+
+            <div>
+                <button type="button" class="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700" aria-label="Menu">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <div uk-drop="mode: click; pos: bottom-right; offset: 8">
+                    <div class="bg-white rounded-lg shadow-xl border border-gray-100 w-48 py-2">
+                        <a href="/" class="block px-4 py-2 hover:bg-gray-100 text-gray-700">
+                            <i class="fa fa-home mr-2"></i> Home
+                        </a>
+                        <a href="/profile/{{user.username}}/" class="block px-4 py-2 hover:bg-gray-100 text-gray-700">
+                            <i class="fa fa-user mr-2"></i> My Profile
+                        </a>
+                        {% if user.username == user_object.username %}
+                        <a href="/settings/" class="block px-4 py-2 hover:bg-gray-100 text-gray-700">
+                            <i class="fa fa-cog mr-2"></i> Settings
+                        </a>
+                        {% endif %}
+                        <hr class="my-1 border-gray-100">
+                        <a href="/logout/" class="block px-4 py-2 hover:bg-red-50 text-red-600">
+                            <i class="fa fa-sign-out-alt mr-2"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 lg:px-6 py-8">
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="h-32 bg-gradient-to-r from-pink-600 to-yellow-400"></div>
+
+            <div class="p-6 sm:p-8">
+                <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 -mt-16">
+                    <div class="flex items-end gap-4">
+                        <div class="w-28 h-28 rounded-full bg-white p-1 border border-gray-200 shadow-sm">
+                            {% if user_profile and user_profile.profileimg %}
+                                <img src="{{ user_profile.profileimg.url }}" alt="{{ user_object.username }}" class="w-full h-full rounded-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600 text-3xl">
+                                    {{ user_object.username|default:"U"|make_list|first|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-gray-900">@{{ user_object.username }}</div>
+                            {% if user_profile.location %}
+                                <div class="text-sm text-gray-500">{{ user_profile.location }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        {% if user_object.username == user.username %}
+                            <a href="/settings/" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold text-sm">Edit profile</a>
+                        {% else %}
+                            <form action="/follow/" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="user" value="{{ user_object.username }}">
+                                <button type="submit" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg font-semibold text-sm">
+                                    {{ button_text }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if user_profile.bio %}
+                    <div class="mt-4 text-gray-700">{{ user_profile.bio }}</div>
+                {% endif %}
+
+                <div class="mt-6 grid grid-cols-3 gap-3 sm:gap-6">
+                    <div class="bg-gray-50 rounded-xl border border-gray-200 p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-900">{{ user_post_length }}</div>
+                        <div class="text-xs text-gray-500">Posts</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl border border-gray-200 p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-900">{{ user_followers }}</div>
+                        <div class="text-xs text-gray-500">Followers</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl border border-gray-200 p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-900">{{ user_following }}</div>
+                        <div class="text-xs text-gray-500">Following</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Posts</h2>
+
+            {% if user_posts %}
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {% for post in user_posts %}
+                        <a href="{{ post.image.url }}" class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                            {% if post.image %}
+                                <img src="{{ post.image.url }}" alt="Post" class="w-full h-40 object-cover">
+                            {% else %}
+                                <div class="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400">No image</div>
+                            {% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center text-gray-500">
+                    No posts yet.
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script src="{% static 'assets/js/uikit.js' %}"></script>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+</body>
+
+</html>
