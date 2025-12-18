@@ -11,9 +11,13 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import logging
 from pathlib import Path
+from urllib.parse import urlparse
 
 import dj_database_url
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -90,7 +94,25 @@ WSGI_APPLICATION = 'blog.wsgi.application'
 
 db_engine = os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3')
 
-if os.environ.get('DATABASE_URL'):
+def _is_localhost(hostname: str | None) -> bool:
+    if not hostname:
+        return False
+    return hostname in ('localhost', '127.0.0.1', '::1')
+
+
+database_url = os.environ.get('DATABASE_URL')
+
+if database_url:
+    try:
+        parsed = urlparse(database_url)
+        if _is_localhost(parsed.hostname) and os.environ.get('ALLOW_LOCAL_DATABASE_URL', '0') not in ('1', 'true', 'yes', 'on'):
+            logger.warning('Ignoring DATABASE_URL pointing to localhost')
+            database_url = None
+    except Exception:
+        # If parsing fails, keep the original value and let Django surface the error.
+        pass
+
+if database_url:
     DATABASES = {
         'default': dj_database_url.config(
             conn_max_age=600,
@@ -106,16 +128,26 @@ elif db_engine == 'django.db.backends.sqlite3':
     }
 else:
     # Allows switching to PostgreSQL/MySQL via environment variables without code changes.
-    DATABASES = {
-        'default': {
-            'ENGINE': db_engine,
-            'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USER'),
-            'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST'),
-            'PORT': os.environ.get('DB_PORT'),
+    db_host = os.environ.get('DB_HOST')
+    if _is_localhost(db_host) and os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
+        # Render has no DB running on localhost. If the env is misconfigured, fall back.
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': db_engine,
+                'NAME': os.environ.get('DB_NAME'),
+                'USER': os.environ.get('DB_USER'),
+                'PASSWORD': os.environ.get('DB_PASSWORD'),
+                'HOST': db_host,
+                'PORT': os.environ.get('DB_PORT'),
+            }
+        }
 
 
 # Password validation
