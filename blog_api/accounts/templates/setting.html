@@ -61,13 +61,10 @@
                     </div>
                     <div class="md:col-span-2 flex items-center gap-4">
                         <div class="w-20 h-20 rounded-full border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center">
-                            {% if user_profile and user_profile.profileimg %}
-                                <img src="{{ user_profile.profileimg.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
-                            {% else %}
-                                <span class="text-2xl font-bold text-gray-600">{{ user.username|default:"U"|make_list|first|upper }}</span>
-                            {% endif %}
+                            <img id="profileImagePreview" {% if user_profile and user_profile.profileimg %}src="{{ user_profile.profileimg.url }}?v={{ user_profile.updated_at|date:'U' }}"{% endif %} alt="{{ user.username }}" class="w-full h-full object-cover {% if not user_profile or not user_profile.profileimg %}hidden{% endif %}">
+                            <span id="profileImageFallback" class="text-2xl font-bold text-gray-600 {% if user_profile and user_profile.profileimg %}hidden{% endif %}">{{ user.username|default:"U"|make_list|first|upper }}</span>
                         </div>
-                        <input type="file" name="image" accept="image/*" class="block w-full text-sm" />
+                        <input id="profileImageInput" type="file" name="image" accept="image/*" class="block w-full text-sm" />
                     </div>
                 </div>
 
@@ -101,6 +98,26 @@
 
     <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.21.12/dist/js/uikit.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.21.12/dist/js/uikit-icons.min.js"></script>
+
+    <script>
+        (function () {
+            const input = document.getElementById('profileImageInput');
+            const img = document.getElementById('profileImagePreview');
+            const fallback = document.getElementById('profileImageFallback');
+            if (!input || !img || !fallback) return;
+
+            input.addEventListener('change', function () {
+                const file = input.files && input.files[0];
+                if (!file) return;
+                if (!file.type || !file.type.startsWith('image/')) return;
+
+                const url = URL.createObjectURL(file);
+                img.src = url;
+                img.classList.remove('hidden');
+                fallback.classList.add('hidden');
+            });
+        })();
+    </script>
 </body>
 
 </html>

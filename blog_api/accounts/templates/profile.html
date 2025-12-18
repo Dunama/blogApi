@@ -32,7 +32,7 @@
                 <div class="uk-inline">
                     <button type="button" class="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-50 overflow-hidden flex items-center justify-center" aria-label="Account menu">
                         {% if request_user_profile and request_user_profile.profileimg %}
-                            <img src="{{ request_user_profile.profileimg.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
+                            <img src="{{ request_user_profile.profileimg.url }}?v={{ request_user_profile.updated_at|date:'U' }}" alt="{{ user.username }}" class="w-full h-full object-cover">
                         {% else %}
                             <i class="fa fa-user text-gray-700"></i>
                         {% endif %}

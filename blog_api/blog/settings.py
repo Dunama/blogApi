@@ -30,7 +30,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-5b^-eh=fzi73ow^2$$u6avz&%d0q1*88oez=219!g*hcfoxavp')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', '0').lower() in ('1', 'true', 'yes', 'on')
+# Default to DEBUG=1 for local dev, but keep Render/prod explicitly set to 0.
+DEBUG = os.environ.get('DJANGO_DEBUG', '1').lower() in ('1', 'true', 'yes', 'on')
 
 _allowed_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').strip()
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',') if h.strip()]
