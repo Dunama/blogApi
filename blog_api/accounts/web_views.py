@@ -1,9 +1,14 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='/signin/')
@@ -46,16 +51,21 @@ def index(request):
 def signin(request):
     # Handles the HTML login form on GET/POST.
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        password = request.POST.get('password', '')
+        try:
+            username = request.POST.get('username', '').strip()
+            password = request.POST.get('password', '')
 
-        user = authenticate(request, username=username, password=password)
-        if user is None:
-            messages.error(request, 'Invalid username or password')
+            user = authenticate(request, username=username, password=password)
+            if user is None:
+                messages.error(request, 'Invalid username or password')
+                return redirect('/signin/')
+
+            login(request, user)
+            return redirect('/')
+        except Exception:
+            logger.exception('Web signin failed')
+            messages.error(request, 'Login failed due to a server error. Please try again.')
             return redirect('/signin/')
-
-        login(request, user)
-        return redirect('/')
 
     return render(request, 'signin.html')
 
@@ -63,26 +73,31 @@ def signin(request):
 def signup(request):
     # Handles the HTML signup form on GET/POST.
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        email = request.POST.get('email', '').strip()
-        password = request.POST.get('password', '')
-        password2 = request.POST.get('password2', '')
+        try:
+            username = request.POST.get('username', '').strip()
+            email = request.POST.get('email', '').strip()
+            password = request.POST.get('password', '')
+            password2 = request.POST.get('password2', '')
 
-        if not username:
-            messages.error(request, 'Username is required')
+            if not username:
+                messages.error(request, 'Username is required')
+                return redirect('/signup/')
+
+            if password != password2:
+                messages.error(request, 'Passwords do not match')
+                return redirect('/signup/')
+
+            if User.objects.filter(username=username).exists():
+                messages.error(request, 'Username already exists')
+                return redirect('/signup/')
+
+            user = User.objects.create_user(username=username, email=email, password=password)
+            login(request, user)
+            return redirect('/')
+        except Exception:
+            logger.exception('Web signup failed')
+            messages.error(request, 'Signup failed due to a server error. Please try again.')
             return redirect('/signup/')
-
-        if password != password2:
-            messages.error(request, 'Passwords do not match')
-            return redirect('/signup/')
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'Username already exists')
-            return redirect('/signup/')
-
-        user = User.objects.create_user(username=username, email=email, password=password)
-        login(request, user)
-        return redirect('/')
 
     return render(request, 'signup.html')
 
