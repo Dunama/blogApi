@@ -107,31 +107,25 @@
                             </div>
                         </div>
 
-                        <div>
-                            <div class="uk-inline">
-                                <button type="button" class="text-gray-400 hover:text-gray-600" aria-label="Post menu">
-                                    <i class="fa fa-ellipsis-h"></i>
-                                </button>
-                                <div uk-dropdown="mode: click; pos: bottom-right; offset: 8">
-                                    <ul class="bg-white shadow-lg rounded-lg border border-gray-100 w-40 text-sm py-2">
-                                        <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 text-gray-600">Share</a></li>
-                                        {% if post.image %}
-                                        <li><a href="{{post.image.url}}" download class="block px-4 py-2 hover:bg-gray-100 text-gray-600">Download</a></li>
-                                        {% endif %}
-                                        {% if post.user == request.user %}
-                                        <li class="border-t border-gray-100"></li>
-                                        <li>
-                                            <form action="/delete-post/" method="POST" class="block">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="post_id" value="{{post.id}}">
-                                                <button type="submit" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600">Delete</button>
-                                            </form>
-                                        </li>
-                                        {% endif %}
-                                        <li class="border-t border-gray-100"></li>
-                                        <li><a href="#" class="block px-4 py-2 hover:bg-red-50 text-red-500">Report</a></li>
-                                    </ul>
-                                </div>
+                        <div class="relative">
+                            <button type="button" class="text-gray-400 hover:text-gray-600 post-menu-btn" aria-label="Post menu" data-post-id="{{post.id}}">
+                                <i class="fa fa-ellipsis-h"></i>
+                            </button>
+                            <div id="post-menu-{{post.id}}" class="hidden absolute right-0 top-full mt-2 bg-white shadow-lg rounded-lg border border-gray-100 w-40 text-sm py-2 z-50">
+                                <a href="#" class="block px-4 py-2 hover:bg-gray-100 text-gray-600">Share</a>
+                                {% if post.image %}
+                                <a href="{{post.image.url}}" download class="block px-4 py-2 hover:bg-gray-100 text-gray-600">Download</a>
+                                {% endif %}
+                                {% if post.user == request.user %}
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <form action="/delete-post/" method="POST" class="block">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="post_id" value="{{post.id}}">
+                                    <button type="submit" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600">Delete</button>
+                                </form>
+                                {% endif %}
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="#" class="block px-4 py-2 hover:bg-red-50 text-red-500">Report</a>
                             </div>
                         </div>
                     </div>
@@ -288,6 +282,36 @@
 
                 preview.src = URL.createObjectURL(file);
                 preview.classList.remove('hidden');
+            });
+        })();
+
+        // Post menu dropdown functionality
+        (function () {
+            function closeAllMenus() {
+                document.querySelectorAll('[id^="post-menu-"]').forEach(function(menu) {
+                    menu.classList.add('hidden');
+                });
+            }
+
+            document.querySelectorAll('.post-menu-btn').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const postId = this.getAttribute('data-post-id');
+                    const menu = document.getElementById('post-menu-' + postId);
+                    const isHidden = menu.classList.contains('hidden');
+                    
+                    closeAllMenus();
+                    
+                    if (isHidden) {
+                        menu.classList.remove('hidden');
+                    }
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('[id^="post-menu-"]') && !e.target.closest('.post-menu-btn')) {
+                    closeAllMenus();
+                }
             });
         })();
     </script>

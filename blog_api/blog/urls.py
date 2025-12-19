@@ -17,9 +17,10 @@ Including another URLconf
 import os
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
 
 urlpatterns = [
     path('', include('accounts.web_urls')),
@@ -29,6 +30,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
+# Serve media files - enabled by DEBUG or DJANGO_SERVE_MEDIA env var
 _serve_media = settings.DEBUG or os.environ.get('DJANGO_SERVE_MEDIA', '').lower() in ('1', 'true', 'yes', 'on')
 if _serve_media:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Use re_path for more robust media serving that works in production
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
